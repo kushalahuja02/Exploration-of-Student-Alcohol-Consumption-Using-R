@@ -1,0 +1,169 @@
+---
+title: "assignment 2 r"
+output: html_document
+date: "2022-11-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+```{r}
+rm(list = ls())
+#importing the dataset 
+
+StudentConsumption <- read.csv("/Users/ahuja/Desktop/student-mat.csv",stringsAsFactors = F,header=T)
+
+#Performing Exploratory Data Analysis
+
+#str() function is used to know the structure of the dataset i.e. datatypes of the variables included in the dataset  
+
+str(StudentConsumption)
+
+#summary() function is used to know the brief introduction of the dataset 
+
+summary(StudentConsumption)
+
+#Returns the first n rows of the dataset 
+head(StudentConsumption) 
+
+#Return the last n rows of the dataset
+tail(StudentConsumption)
+
+#ncol() function is showing the number of columns present in the dataset 
+paste("Number of Columns in the Dataset are- ", ncol(StudentConsumption))
+
+#nrow() funtion is showing the number of rows present in the  data set
+paste("Number of Rows in the Dataset are- ", nrow(StudentConsumption))
+
+#dim() function is used to state the dimension of the dataset i.e. columns and rows in one output 
+paste("Dimensions of the Dataset - ",dim(StudentConsumption))
+
+#checking the missing values 
+which(is.na(StudentConsumption)) 
+
+sum(is.na(StudentConsumption))
+
+#Since there is no missing values, deplopying it for making the Interactive web app using Shiny. 
+
+```
+
+```{r}
+#loading the required libraries 
+
+library(shiny)
+library(shinythemes)
+library(ggplot2)
+
+#making the UI dashboard by ShinyUI 
+UI <- shinyUI(fluidPage(theme =shinytheme("superhero"), #superhero theme is used for the app
+                        navbarPage("Consumption of Alcohol by Students"), #navbarpage is used as so to add more more pages in the single dashboard in future
+                        
+  titlePanel("Alcohol Consumption of Students in respect of Grades, Family Status and Gender"),
+   headerPanel("Analysing the Student's Alcohol Consumption"),
+  
+  sidebarLayout(
+    sidebarPanel(
+     
+      helpText("Input parameters"), #describing for parameters or sidepanels to the user
+      
+sliderInput(inputId="bins",  label = "Number of Bins",
+    min = 0, max = 50, value = 25, step = 5),  #making the sliderinput for bins
+
+ radioButtons("var",label = "Select the Grade", choices = c("G1", "G2", "G3"),
+  selected = "G1"), #making a radiobutton for selecting Grades in the datset
+      
+  selectInput(inputId="famsup",
+               label="Educational Support from Family",
+              choices = c("Yes","No"),
+         selected="Yes"),  #making a selectInput for selecting the binary data of famsup column
+
+   radioButtons("gender",label="Choose a Gender",  choices=c("Male","Female"),
+                selected="Male"), #making a radioButton for selecting the gender 
+
+ sliderInput(inputId="famrel",  
+             label="Quality of RelationShip with Family",
+             min = 1, max = 5,value = 3),  #making a sliderInput for famrel which describes the relationship with the family from 1 being poor to 5 meaning Good
+
+ ),
+    
+    mainPanel(plotOutput("plot"))
+)
+))
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r}
+
+plotting <- function(var,titlePlot,color,abins) #plotting is called 
+{
+  names(var)<- c("Sex","famsup","famrel","Dalc","grade") #adding the attributes to the var
+  var <- var[,c(-1,-2,-3)]  #for plotting , taking the Dalc and grade attribute
+  
+  var$Dalc <- as.factor(var$Dalc) #changing the datatype
+
+graph2 <- ggplot(var, aes(x=grade, fill=color)) + geom_histogram(binwidth = abins,fill=color)+ ggtitle(titlePlot) +theme( plot.title = element_text(size=15, face="bold")+facet_wrap(~ grade, scale="free_y") +facet_grid(Dalc~.))   #plotting by using ggplot
+
+graph2
+
+}
+Server <- shinyServer(
+ function(input, output) {
+output$plot <- renderPlot({  
+      
+color <- switch(input$var, "G1" = "#FF9999", "G2" = "#56B4E9",
+                      "G3" = "#009E73")
+dataset <- switch(input$var,"G1" = StudentConsumption[,c(2,17,24,27,31)],"G2" = StudentConsumption[,c(2,17,24,27,32)],"G3" = StudentConsumption[,c(2,17,24,27,33)] )
+      
+title <- switch(input$var, "G1"="Alcohol Consumption of Grade 1 Students",
+    "G2"=" Alcohol Consumption of Grade 2 Students",
+  "G3"=" Alcohol Consumption of Grade 3 Students")
+
+ dataset <- switch(input$famsup,
+                   "Yes"=subset(dataset,famsup=="yes"),
+                 "No"=subset(dataset ,famsup=="no"))
+title <- switch(input$famsup,
+             "Yes"=paste(title,"who have education support from family"),
+            "No"=paste(title,"who do not have education support from family"))
+             
+ dataset <- switch(input$gender,"Male"=subset(dataset,sex=="M"),
+                            "Female"=subset(dataset,sex=="F"))
+title <- switch(input$gender,'Male'=paste(title,"are Male Students"),
+                      "Female"=paste(title,"are Female Students"))
+        
+dataset <- switch(input$famrel,
+                     "Not good"=subset(dataset ,famrel==1),
+                     "Average"=subset(dataset,famrel==2),
+                     "Good"=subset(dataset,famrel==3),
+                     "Excellent"= subset(dataset,famrel==4),
+                     "Great"=subset(dataset,famrel==5))
+title <- switch(input$famrel,
+       "Not good"=paste(title," and Donot have good relationship with their family" ),
+       "Minimal"=paste(title,"and Have Minimal Connection with their family"),
+      "Average"=paste(title,"and Have an Average Relationship with their family"),
+      "Good"= paste(title,"and Have a Good Relationship with their family"),             
+      "Great"= paste(title,"and Have a Great Relationship with their family"))
+
+
+ plotting(var = dataset, titlePlot=title,color = color, abins = input$bins)
+ })
+}
+)
+
+
+shinyApp(ui= UI, server= Server)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
