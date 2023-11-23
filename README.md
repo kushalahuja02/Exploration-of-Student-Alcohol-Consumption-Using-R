@@ -20,8 +20,6 @@ To run this project, you will need R and R Shiny installed on your machine. Foll
 
 ## File Structure
 - `Exploration_of_Student_Alcohol_Consumption.Rmd` - R Markdown file containing the analysis code.
-- `app.R` - R Shiny application script.
-- `data/` - Directory containing the dataset files.
 - `docs/` - Documentation and reports.
 
 ## Reports
