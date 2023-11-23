@@ -13,9 +13,9 @@ The dataset used in this project includes information on student demographics, a
 
 ## Installation and Usage
 To run this project, you will need R and R Shiny installed on your machine. Follow these steps:
-1. Clone the repository: `git clone [repository URL]`
-2. Navigate to the project directory: `cd [project directory]`
-3. Install required R packages: `install.packages("package_name")`
+1. Clone the repository
+2. Navigate to the project directory.
+3. Install required R packages
 4. Run the R Shiny application: `runApp()`
 
 ## File Structure
