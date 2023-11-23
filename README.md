@@ -26,7 +26,7 @@ To run this project, you will need R and R Shiny installed on your machine. Foll
 For detailed insights and findings, refer to the [[Report on Student Alcohol Consumption](https://github.com/kushalahuja02/Exploration-of-Student-Alcohol-Consumption-Using-R/blob/main/(Report)%20Exploration%20of%20Student%20Alcohol%20Consumption.docx)]
 
 ## Contributing
-I welcome any contributions to this project.
+Contributions to this project are welcome! If you have suggestions or improvements, feel free to fork the repository and submit a pull request.
 
 ## License
 This project is licensed under the [MIT License]
